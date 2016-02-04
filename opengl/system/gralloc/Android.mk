@@ -2,7 +2,7 @@ ifneq (false,$(BUILD_EMULATOR_OPENGL_DRIVER))
 
 LOCAL_PATH := $(call my-dir)
 
-$(call emugl-begin-shared-library,gralloc.goldfish)
+$(call emugl-begin-shared-library,gralloc.goby)
 $(call emugl-import,libGLESv1_enc lib_renderControl_enc libOpenglSystemCommon)
 $(call emugl-set-shared-library-subpath,hw)
 

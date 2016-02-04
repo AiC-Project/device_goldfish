@@ -22,6 +22,8 @@
 #include <string.h>
 
 #ifndef _WIN32
+#include <sys/socket.h>
+#include <sys/select.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #else
@@ -45,6 +47,41 @@ TcpStream::TcpStream(int sock, size_t bufSize) :
 #endif
     flag = 1;
     setsockopt( sock, IPPROTO_TCP, TCP_NODELAY, (const char*)&flag, sizeof(flag) );
+}
+
+static int create_socket_server(int port, int type)
+{
+    struct sockaddr_in addr;
+    int s, n;
+
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
+    addr.sin_addr.s_addr = INADDR_ANY;
+
+    s = socket(AF_INET, type, 0);
+    if(s < 0) return -1;
+
+    n = 1;
+    setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (const char *) &n, sizeof(n));
+
+    if(bind(s, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+        close(s);
+        return -1;
+    }
+
+    if (type == SOCK_STREAM) {
+        int ret;
+
+        ret = listen(s, 4);
+
+        if (ret < 0) {
+            close(s);
+            return -1;
+        }
+    }
+
+    return s;
 }
 
 int TcpStream::listen(unsigned short port)
@@ -80,12 +117,36 @@ SocketStream * TcpStream::accept()
 
 int TcpStream::connect(unsigned short port)
 {
-    return connect("127.0.0.1",port);
+    m_sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (!valid()) {
+        ALOGE("TcpStream::connect() - socket() returns %d errno=%d\n", m_sock, errno);
+        return -1;
+    }
+    struct sockaddr_in addr;
+    socklen_t alen;
+
+    memset(&addr, 0, sizeof(addr));
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(port);
+    addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+
+    if (::connect(m_sock, (struct sockaddr*) &addr, sizeof(addr)) < 0) {
+        ALOGE("TcpStream::connect() - connect() errno=%d\n", errno);
+        return -1;
+    }
+    int flag;
+    flag = 1;
+    setsockopt(m_sock, IPPROTO_TCP, TCP_NODELAY, (const char*)&flag, sizeof(flag) );
+
+    return 0;
+
 }
 
 int TcpStream::connect(const char* hostname, unsigned short port)
 {
     m_sock = socket_network_client(hostname, port, SOCK_STREAM);
     if (!valid()) return -1;
+    int flag = 1;
+    setsockopt( m_sock, IPPROTO_TCP, TCP_NODELAY, (const char*)&flag, sizeof(flag) );
     return 0;
 }

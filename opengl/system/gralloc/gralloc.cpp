@@ -1034,7 +1034,7 @@ fallback_init(void)
     char  prop[PROPERTY_VALUE_MAX];
     void* module;
 
-    property_get("ro.kernel.qemu.gles", prop, "0");
+    property_get("aicVM.gles", prop, "0");
     if (atoi(prop) > 0) {
         return;
     }
