@@ -33,6 +33,7 @@ struct renderControl_client_context_t {
 	rcColorBufferCacheFlush_client_proc_t rcColorBufferCacheFlush;
 	rcReadColorBuffer_client_proc_t rcReadColorBuffer;
 	rcUpdateColorBuffer_client_proc_t rcUpdateColorBuffer;
+	rcSetOrientation_client_proc_t rcSetOrientation;
 	//Accessors 
 	virtual rcGetRendererVersion_client_proc_t set_rcGetRendererVersion(rcGetRendererVersion_client_proc_t f) { rcGetRendererVersion_client_proc_t retval = rcGetRendererVersion; rcGetRendererVersion = f; return retval;}
 	virtual rcGetEGLVersion_client_proc_t set_rcGetEGLVersion(rcGetEGLVersion_client_proc_t f) { rcGetEGLVersion_client_proc_t retval = rcGetEGLVersion; rcGetEGLVersion = f; return retval;}
@@ -59,6 +60,7 @@ struct renderControl_client_context_t {
 	virtual rcColorBufferCacheFlush_client_proc_t set_rcColorBufferCacheFlush(rcColorBufferCacheFlush_client_proc_t f) { rcColorBufferCacheFlush_client_proc_t retval = rcColorBufferCacheFlush; rcColorBufferCacheFlush = f; return retval;}
 	virtual rcReadColorBuffer_client_proc_t set_rcReadColorBuffer(rcReadColorBuffer_client_proc_t f) { rcReadColorBuffer_client_proc_t retval = rcReadColorBuffer; rcReadColorBuffer = f; return retval;}
 	virtual rcUpdateColorBuffer_client_proc_t set_rcUpdateColorBuffer(rcUpdateColorBuffer_client_proc_t f) { rcUpdateColorBuffer_client_proc_t retval = rcUpdateColorBuffer; rcUpdateColorBuffer = f; return retval;}
+	virtual rcSetOrientation_client_proc_t set_rcSetOrientation(rcSetOrientation_client_proc_t f) { rcSetOrientation_client_proc_t retval = rcSetOrientation; rcSetOrientation = f; return retval;}
 	 virtual ~renderControl_client_context_t() {}
 
 	typedef renderControl_client_context_t *CONTEXT_ACCESSOR_TYPE(void);

@@ -18,7 +18,6 @@ struct renderControl_encoder_context_t : public renderControl_client_context_t {
 
 	renderControl_encoder_context_t(IOStream *stream);
 
-
 };
 
 extern "C" {

@@ -26,7 +26,6 @@ $(call emugl-end-module)
 # Other builds are device-specific and will provide their own
 # version of this file to point to the appropriate HW EGL libraries.
 #
-ifneq (,$(filter full full_x86 full_mips sdk sdk_x86 sdk_mips google_sdk google_sdk_x86 google_sdk_mips,$(TARGET_PRODUCT)))
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := egl.cfg
@@ -36,6 +35,5 @@ LOCAL_MODULE_PATH := $(TARGET_OUT)/lib/egl
 LOCAL_MODULE_CLASS := ETC
 
 include $(BUILD_PREBUILT)
-endif # TARGET_PRODUCT in 'full full_x86 full_mips sdk sdk_x86 sdk_mips google_sdk google_sdk_x86 google_sdk_mips')
 
-endif # BUILD_EMULATOR_OPENGL_DRIVER != false
+endif

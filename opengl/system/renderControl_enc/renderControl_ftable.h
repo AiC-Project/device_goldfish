@@ -33,6 +33,7 @@ static struct _renderControl_funcs_by_name {
 	{"rcColorBufferCacheFlush", (void*)rcColorBufferCacheFlush},
 	{"rcReadColorBuffer", (void*)rcReadColorBuffer},
 	{"rcUpdateColorBuffer", (void*)rcUpdateColorBuffer},
+	{"rcSetOrientation", (void*)rcSetOrientation},
 };
 static int renderControl_num_funcs = sizeof(renderControl_funcs_by_name) / sizeof(struct _renderControl_funcs_by_name);
 

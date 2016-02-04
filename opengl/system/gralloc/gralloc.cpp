@@ -31,6 +31,8 @@
 #include <cutils/log.h>
 #include <cutils/properties.h>
 
+#define ROTATION_PROP "aicd.screen_rotation"
+
 /* Set to 1 or 2 to enable debug traces */
 #define DEBUG  0
 
@@ -85,6 +87,7 @@ struct gralloc_device_t {
 //
 struct fb_device_t {
     framebuffer_device_t  device;
+    int orientation;
 };
 
 static int map_buffer(cb_handle_t *cb, void **vaddr)
@@ -121,6 +124,50 @@ static int map_buffer(cb_handle_t *cb, void **vaddr)
         ALOGE("gralloc: Failed to get renderControl encoder context\n"); \
         return -EIO; \
     }
+
+static int fb_manageOrientation(struct framebuffer_device_t* dev, int orientation)
+{
+    fb_device_t *fbdev = (fb_device_t *)dev;
+
+    if (!fbdev) {
+        return -1;
+    }
+
+    // Make sure we have host connection
+    DEFINE_AND_VALIDATE_HOST_CONNECTION;
+
+    ALOGI("setOrientation: orientation=%d\n", orientation);
+
+    if (fbdev->orientation != orientation) {
+        switch (orientation) {
+         case 0:
+            property_set(ROTATION_PROP, "0");
+            rcEnc->rcSetOrientation(rcEnc, 0);
+            break;
+         case 1:
+            property_set(ROTATION_PROP, "90");
+            rcEnc->rcSetOrientation(rcEnc, 90);
+            break;
+         case 2:
+            property_set(ROTATION_PROP, "180");
+            rcEnc->rcSetOrientation(rcEnc, 180);
+            break;
+         case 3:
+            property_set(ROTATION_PROP, "270");
+            rcEnc->rcSetOrientation(rcEnc, 270);
+            break;
+        }
+        fbdev->orientation = orientation;
+    }
+
+    return 0;
+}
+
+static void fb_setOrientation(struct framebuffer_device_t* dev, int orientation) 
+{
+    if (fb_manageOrientation(dev, orientation)<0)
+        ALOGE("Error setting Orientation");
+}
 
 
 //
@@ -880,6 +927,7 @@ static int gralloc_device_open(const hw_module_t* module,
                                hw_device_t** device)
 {
     int status = -EINVAL;
+    property_set(ROTATION_PROP, "0");
 
     D("gralloc_device_open %s\n", name);
 
@@ -945,6 +993,11 @@ static int gralloc_device_open(const hw_module_t* module,
         D("gralloc: min_swap=%d\n", min_si);
         EGLint max_si = rcEnc->rcGetFBParam(rcEnc, FB_MAX_SWAP_INTERVAL);
         D("gralloc: max_swap=%d\n", max_si);
+        EGLint dpi = rcEnc->rcGetFBParam(rcEnc, FB_DPI);
+        D("gralloc: dpi=%d\n", dpi);
+        char set_dpi[128];
+        snprintf(set_dpi, 128, "/system/bin/setdpi %d", dpi);
+        system(set_dpi);
 
         //
         // Allocate memory for the framebuffer device
@@ -966,6 +1019,7 @@ static int gralloc_device_open(const hw_module_t* module,
         dev->device.post            = fb_post;
         dev->device.setUpdateRect   = 0; //fb_setUpdateRect;
         dev->device.compositionComplete = fb_compositionComplete; //XXX: this is a dummy
+        dev->device.setOrientation = fb_setOrientation;
 
         const_cast<uint32_t&>(dev->device.flags) = 0;
         const_cast<uint32_t&>(dev->device.width) = width;
@@ -1027,7 +1081,7 @@ fallback_init(void)
     char  prop[PROPERTY_VALUE_MAX];
     void* module;
 
-    property_get("ro.kernel.qemu.gles", prop, "0");
+    property_get("aicVM.gles", prop, "0");
     if (atoi(prop) > 0) {
         return;
     }
