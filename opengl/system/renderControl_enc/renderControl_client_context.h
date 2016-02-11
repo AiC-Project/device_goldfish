@@ -34,6 +34,7 @@ struct renderControl_client_context_t {
 	rcReadColorBuffer_client_proc_t rcReadColorBuffer;
 	rcUpdateColorBuffer_client_proc_t rcUpdateColorBuffer;
 	rcOpenColorBuffer2_client_proc_t rcOpenColorBuffer2;
+    rcSetOrientation_client_proc_t rcSetOrientation;
 	 virtual ~renderControl_client_context_t() {}
 
 	typedef renderControl_client_context_t *CONTEXT_ACCESSOR_TYPE(void);

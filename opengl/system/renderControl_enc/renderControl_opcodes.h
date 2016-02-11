@@ -29,7 +29,8 @@
 #define OP_rcReadColorBuffer 					10023
 #define OP_rcUpdateColorBuffer 					10024
 #define OP_rcOpenColorBuffer2 					10025
-#define OP_last 					10026
+#define OP_rcSetOrientation 					10026
+#define OP_last 					10027
 
 
 #endif

@@ -34,6 +34,7 @@ static const struct _renderControl_funcs_by_name {
 	{"rcReadColorBuffer", (void*)rcReadColorBuffer},
 	{"rcUpdateColorBuffer", (void*)rcUpdateColorBuffer},
 	{"rcOpenColorBuffer2", (void*)rcOpenColorBuffer2},
+	{"rcSetOrientation", (void*)rcSetOrientation},
 };
 static const int renderControl_num_funcs = sizeof(renderControl_funcs_by_name) / sizeof(struct _renderControl_funcs_by_name);
 

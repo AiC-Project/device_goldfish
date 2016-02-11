@@ -526,6 +526,21 @@ int rcOpenColorBuffer2_enc(void *self , uint32_t colorbuffer)
 	return retval;
 }
 
+void rcSetOrientation_enc(void *self , uint32_t orientation)
+{
+    renderControl_encoder_context_t *ctx = (renderControl_encoder_context_t *)self;
+    IOStream *stream = ctx->m_stream;
+
+    unsigned char *ptr;
+    const size_t packetSize = 8 + 4;
+    ptr = stream->alloc(packetSize);
+    int tmp = OP_rcSetOrientation;memcpy(ptr, &tmp, 4); ptr += 4;
+    memcpy(ptr, &packetSize, 4); ptr += 4;
+    memcpy(ptr, &orientation, 4); ptr += 4;
+}
+
+
+
 }  // namespace
 
 renderControl_encoder_context_t::renderControl_encoder_context_t(IOStream *stream)
@@ -558,5 +573,6 @@ renderControl_encoder_context_t::renderControl_encoder_context_t(IOStream *strea
 	this->rcReadColorBuffer = &rcReadColorBuffer_enc;
 	this->rcUpdateColorBuffer = &rcUpdateColorBuffer_enc;
 	this->rcOpenColorBuffer2 = &rcOpenColorBuffer2_enc;
+	this->rcSetOrientation= &rcSetOrientation_enc;
 }
 
