@@ -40,20 +40,22 @@ android::EmulatedCameraFactory  gEmulatedCameraFactory;
 namespace android {
 
 EmulatedCameraFactory::EmulatedCameraFactory()
-        : mQemuClient(),
-          mEmulatedCameras(NULL),
+          : mEmulatedCameras(NULL),
           mEmulatedCameraNum(0),
           mFakeCameraNum(0),
           mConstructedOK(false),
           mCallbacks(NULL)
 {
     status_t res;
+#if 0
     /* Connect to the factory service in the emulator, and create Qemu cameras. */
     if (mQemuClient.connectClient(NULL) == NO_ERROR) {
         /* Connection has succeeded. Create emulated cameras for each camera
          * device, reported by the service. */
         createQemuCameras();
     }
+#endif
+    createQemuCameras();
 
     if (isBackFakeCameraEmulationOn()) {
         /* Camera ID. */
@@ -319,6 +321,7 @@ static const char lListDirToken[]     = "dir=";
 
 void EmulatedCameraFactory::createQemuCameras()
 {
+#if 0
     /* Obtain camera list. */
     char* camera_list = NULL;
     status_t res = mQemuClient.listCameras(&camera_list);
@@ -344,16 +347,20 @@ void EmulatedCameraFactory::createQemuCameras()
         eol = strchr(eol + 1, '\n');
     }
 
+#endif
+    int num = 2;
+    int res = 0;
+    ALOGE("create qemu cameras");
+
     /* Allocate the array for emulated camera instances. Note that we allocate
      * two more entries for back and front fake camera emulation. */
-    mEmulatedCameras = new EmulatedBaseCamera*[num + 2];
+    mEmulatedCameras = new EmulatedBaseCamera*[num];
     if (mEmulatedCameras == NULL) {
         ALOGE("%s: Unable to allocate emulated camera array for %d entries",
              __FUNCTION__, num + 1);
-        free(camera_list);
         return;
     }
-    memset(mEmulatedCameras, 0, sizeof(EmulatedBaseCamera*) * (num + 1));
+    memset(mEmulatedCameras, 0, sizeof(EmulatedBaseCamera*) * (num));
 
     /*
      * Iterate the list, creating, and initializin emulated qemu cameras for each
@@ -361,6 +368,7 @@ void EmulatedCameraFactory::createQemuCameras()
      */
 
     int index = 0;
+#if 0
     char* cur_entry = camera_list;
     while (cur_entry != NULL && *cur_entry != '\0' && index < num) {
         /* Find the end of the current camera entry, and terminate it with zero
@@ -410,11 +418,21 @@ void EmulatedCameraFactory::createQemuCameras()
                 ALOGE("%s: Unable to instantiate EmulatedQemuCamera",
                      __FUNCTION__);
             }
-        } else {
-            ALOGW("%s: Bad camera information: %s", __FUNCTION__, cur_entry);
-        }
+#endif
 
-        cur_entry = next_entry;
+    /* Create and initialize qemu camera. */
+    EmulatedQemuCamera* qemu_cam =
+        new EmulatedQemuCamera(index, &HAL_MODULE_INFO_SYM.common);
+    if (NULL != qemu_cam) {
+        res = qemu_cam->Initialize("back", 24801);
+        if (res == NO_ERROR) {
+            mEmulatedCameras[index] = qemu_cam;
+            index++;
+        } else {
+            delete qemu_cam;
+        }
+    } else {
+        ALOGE("Unable to instantiate back camera");
     }
 
     mEmulatedCameraNum = index;

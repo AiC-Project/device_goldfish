@@ -45,12 +45,12 @@ EmulatedQemuCameraDevice::~EmulatedQemuCameraDevice()
  * Public API
  ***************************************************************************/
 
-status_t EmulatedQemuCameraDevice::Initialize(const char* device_name)
+status_t EmulatedQemuCameraDevice::Initialize(const char* device_name, int port)
 {
     /* Connect to the service. */
     char connect_str[256];
     snprintf(connect_str, sizeof(connect_str), "name=%s", device_name);
-    status_t res = mQemuClient.connectClient(connect_str);
+    status_t res = mQemuClient.connectClient(port);
     if (res != NO_ERROR) {
         return res;
     }
@@ -155,6 +155,8 @@ status_t EmulatedQemuCameraDevice::startDevice(int width,
         return res;
     }
 
+
+#if 0
     /* Allocate preview frame buffer. */
     /* TODO: Watch out for preview format changes! At this point we implement
      * RGB32 only.*/
@@ -164,6 +166,7 @@ status_t EmulatedQemuCameraDevice::startDevice(int width,
              __FUNCTION__, mTotalPixels);
         return ENOMEM;
     }
+#endif
 
     /* Start the actual camera device. */
     res = mQemuClient.queryStart(mPixelFormat, mFrameWidth, mFrameHeight);
@@ -218,7 +221,7 @@ status_t EmulatedQemuCameraDevice::stopDevice()
 
 status_t EmulatedQemuCameraDevice::getCurrentPreviewFrame(void* buffer)
 {
-    ALOGW_IF(mPreviewFrame == NULL, "%s: No preview frame", __FUNCTION__);
+    // ALOGW_IF(mPreviewFrame == NULL, "%s: No preview frame", __FUNCTION__);
     if (mPreviewFrame != NULL) {
         memcpy(buffer, mPreviewFrame, mTotalPixels * 4);
         return 0;
@@ -242,9 +245,9 @@ bool EmulatedQemuCameraDevice::inWorkerThread()
     }
 
     /* Query frames from the service. */
-    status_t query_res = mQemuClient.queryFrame(mCurrentFrame, mPreviewFrame,
+    status_t query_res = mQemuClient.queryFrame(mCurrentFrame, NULL,
                                                  mFrameBufferSize,
-                                                 mTotalPixels * 4,
+                                                 0,
                                                  mWhiteBalanceScale[0],
                                                  mWhiteBalanceScale[1],
                                                  mWhiteBalanceScale[2],
