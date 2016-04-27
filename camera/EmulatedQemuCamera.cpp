@@ -22,6 +22,7 @@
 #define LOG_NDEBUG 0
 #define LOG_TAG "EmulatedCamera_QemuCamera"
 #include <cutils/log.h>
+#include <cutils/properties.h>
 #include "EmulatedQemuCamera.h"
 #include "EmulatedCameraFactory.h"
 
@@ -37,21 +38,36 @@ EmulatedQemuCamera::~EmulatedQemuCamera()
 {
 }
 
+static int getCameraOrientation()
+{
+    char prop[PROPERTY_VALUE_MAX];
+    int height, width, depth, orientation = 0;
+    if ((property_get("aicVM.vbox_graph_mode", prop, NULL)) && sscanf(prop, "%dx%d-%d", &width, &height, &depth) > 3) {
+        if (height > width)
+            orientation = 90;
+    }
+    return orientation;
+
+}
+
 /****************************************************************************
  * EmulatedCamera virtual overrides.
- ***************************************************************************/
+ ****************************************************************************/
 
 status_t EmulatedQemuCamera::Initialize(const char* device_name,
-                                        const char* frame_dims,
-                                        const char* facing_dir)
+                                        const int port)
 {
+#if 0
     ALOGV("%s:\n   Name=%s\n   Facing '%s'\n   Dimensions=%s",
          __FUNCTION__, device_name, facing_dir, frame_dims);
+#endif
     /* Save dimensions. */
-    mFrameDims = frame_dims;
+    const char frame_dims[] = "640x480,320x240,176x144";
+    mFrameDims = String8(frame_dims);
+    const char preview_frame_dims[] = "320x240,176x144";
 
     /* Initialize camera device. */
-    status_t res = mQemuCameraDevice.Initialize(device_name);
+    status_t res = mQemuCameraDevice.Initialize(device_name, port);
     if (res != NO_ERROR) {
         return res;
     }
@@ -66,16 +82,26 @@ status_t EmulatedQemuCamera::Initialize(const char* device_name,
      * Set customizable parameters.
      */
 
-    mParameters.set(EmulatedCamera::FACING_KEY, facing_dir);
-    mParameters.set(EmulatedCamera::ORIENTATION_KEY,
-                    gEmulatedCameraFactory.getQemuCameraOrientation());
+    mParameters.set(CameraParameters::KEY_SUPPORTED_PREVIEW_FRAME_RATES,
+                    "5,10,15,20,25,30");
+
+    mParameters.set(EmulatedCamera::FACING_KEY,
+                    (strcmp(device_name, EmulatedCamera::FACING_FRONT) == 0) ?
+                    EmulatedCamera::FACING_FRONT :
+                    EmulatedCamera::FACING_BACK);
+    mParameters.set(EmulatedCamera::ORIENTATION_KEY, getCameraOrientation());
+    mParameters.set(CameraParameters::KEY_PREVIEW_FRAME_RATE, "24");
+    mParameters.set(CameraParameters::KEY_PREVIEW_FPS_RANGE, "5000,30000");
     mParameters.set(CameraParameters::KEY_SUPPORTED_PICTURE_SIZES, frame_dims);
-    mParameters.set(CameraParameters::KEY_SUPPORTED_PREVIEW_SIZES, frame_dims);
+    mParameters.set(CameraParameters::KEY_SUPPORTED_VIDEO_SIZES, frame_dims);
+    mParameters.set(CameraParameters::KEY_SUPPORTED_PREVIEW_SIZES, preview_frame_dims);
+    mParameters.set(CameraParameters::KEY_PREFERRED_PREVIEW_SIZE_FOR_VIDEO, "320x240");
 
     /*
      * Use first dimension reported by the device to set current preview and
      * picture sizes.
      */
+#if 0
 
     char first_dim[128];
     /* Dimensions are separated with ',' */
@@ -102,6 +128,10 @@ status_t EmulatedQemuCamera::Initialize(const char* device_name,
     *sep = '\0';
     const int x = atoi(first_dim);
     const int y = atoi(sep + 1);
+    mParameters.setPreviewSize(x, y);
+    mParameters.setPictureSize(x, y);
+#endif
+    int x= 640, y = 480;
     mParameters.setPreviewSize(x, y);
     mParameters.setPictureSize(x, y);
 

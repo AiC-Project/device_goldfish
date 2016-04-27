@@ -19,7 +19,6 @@
 
 #include <utils/RefBase.h>
 #include "EmulatedBaseCamera.h"
-#include "QemuClient.h"
 
 namespace android {
 
@@ -161,9 +160,6 @@ private:
      ***************************************************************************/
 
 private:
-    /* Connection to the camera service in the emulator. */
-    FactoryQemuClient   mQemuClient;
-
     /* Array of cameras available for the emulation. */
     EmulatedBaseCamera**    mEmulatedCameras;
 

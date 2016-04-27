@@ -61,13 +61,10 @@ LOCAL_SRC_FILES := \
 		fake-pipeline2/Sensor.cpp \
 		fake-pipeline2/JpegCompressor.cpp \
 	EmulatedCamera3.cpp \
-		EmulatedFakeCamera3.cpp
+		EmulatedFakeCamera3.cpp \
+		AicClient.cpp
 
-ifeq ($(TARGET_PRODUCT),vbox_x86)
-LOCAL_MODULE := camera.vbox_x86
-else
-LOCAL_MODULE := camera.goldfish
-endif
+LOCAL_MODULE := camera.goby
 
 include $(BUILD_SHARED_LIBRARY)
 

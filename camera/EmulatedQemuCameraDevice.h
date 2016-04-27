@@ -23,7 +23,7 @@
  */
 
 #include "EmulatedCameraDevice.h"
-#include "QemuClient.h"
+#include "AicClient.h"
 
 namespace android {
 
@@ -52,7 +52,7 @@ public:
      * Return:
      *  NO_ERROR on success, or an appropriate error status.
      */
-    status_t Initialize(const char* device_name);
+    status_t Initialize(const char* device_name, int port);
 
     /***************************************************************************
      * Emulated camera device abstract interface implementation.
@@ -103,7 +103,7 @@ protected:
 private:
     /* Qemu client that is used to communicate with the 'emulated camera'
      * service, created for this instance in the emulator. */
-    CameraQemuClient    mQemuClient;
+    CameraAicClient    mQemuClient;
 
     /* Name of the camera device connected to the host. */
     String8             mDeviceName;
@@ -113,7 +113,7 @@ private:
 
     /* Emulated FPS (frames per second).
      * We will emulate 50 FPS. */
-    static const int    mEmulatedFPS = 50;
+    static const int    mEmulatedFPS = 24;
 };
 
 }; /* namespace android */
