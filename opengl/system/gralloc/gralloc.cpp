@@ -1001,6 +1001,11 @@ static int gralloc_device_open(const hw_module_t* module,
         D("gralloc: min_swap=%d\n", min_si);
         EGLint max_si = rcEnc->rcGetFBParam(rcEnc, FB_MAX_SWAP_INTERVAL);
         D("gralloc: max_swap=%d\n", max_si);
+        EGLint dpi = rcEnc->rcGetFBParam(rcEnc, FB_DPI);
+        D("gralloc: dpi=%d\n", dpi);
+        char set_dpi[128];
+        snprintf(set_dpi, 128, "/system/bin/setdpi %d", dpi);
+        system(set_dpi);
 
         //
         // Allocate memory for the framebuffer device
